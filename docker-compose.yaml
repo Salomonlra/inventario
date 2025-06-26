@@ -1,0 +1,44 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Helgen.Sq1serveR
+    container_name: inventarios-sql
+    hostname: inventarios-sql
+    networks:
+      - inventarios-net
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  backend:
+    build:
+      dockerfile: Dockerfile-backend
+    depends_on: 
+      - sqlserver
+    environment:
+      - ASPNETCORE_URLS=http://+:5431
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=InventarioDb;User ID=sa;Password=Helgen.Sq1serveR;
+    ports:
+      - "5431:5431"
+    networks:
+      - inventarios-net
+  
+  frontend:
+    build:
+      dockerfile: Dockerfile-frontend
+    depends_on:
+      - backend
+    environment:
+      - ASPNETCORE_URLS=http://+:5156
+    ports:
+      - "5156:5156"
+    networks:
+      - inventarios-net
+
+networks:
+  inventarios-net:
+    driver: bridge
+
+volumes:
+  sqlserver-data: {}

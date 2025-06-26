@@ -1,0 +1,23 @@
+# Build image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["Inventario.Backend/Inventario.Backend.csproj", "Inventario.Backend/"]
+RUN dotnet restore --disable-parallel "Inventario.Backend/Inventario.Backend.csproj"
+
+COPY . .
+WORKDIR "/src/Inventario.Backend"
+RUN dotnet build "Inventario.Backend.csproj" -c Release -o /app/build
+
+# Publish image
+FROM build AS publish
+RUN dotnet publish "Inventario.Backend.csproj" -c Release -o /app/publish
+
+# Final image (runtime only)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+ENTRYPOINT ["dotnet", "Inventario.Backend.dll"]
+
+ENV ASPNETCORE_URLS=http://+:5000
