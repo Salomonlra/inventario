@@ -1,1 +1,1 @@
-# Sistema de inventarios Helgen technologies
+# Sistema de inventarios 
